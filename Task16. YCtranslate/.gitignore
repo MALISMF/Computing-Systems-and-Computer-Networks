@@ -3,7 +3,8 @@ api_key.txt
 *.key
 *.secret
 
-
+# Результаты работы программы
+translated.txt
 
 # Python
 __pycache__/

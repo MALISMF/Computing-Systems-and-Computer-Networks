@@ -4,7 +4,6 @@ import json
 
 INPUT_FILE = "input.txt"
 FOLDER_ID = "b1gg308ep3p6nui9g8r0"
-target_language = "ru"
 
 def read_api_key(path: str) -> str:
     full_path = os.path.join(os.getcwd(), path)
@@ -19,18 +18,18 @@ def read_texts(path: str) -> list[str]:
         lines = [line.strip() for line in f.readlines()]
     return [line for line in lines if line]
 
-def create_translated_txt(response: requests.Response):
+def create_translated_txt(response: requests.Response, output_file: str):
     try:
         response.raise_for_status()
         data = response.json()
         translations = data.get("translations", [])
         translated_texts = [translation.get("text", "") for translation in translations]
         
-        with open("translated.txt", "w", encoding="utf-8") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             for text in translated_texts:
                 f.write(text + "\n")
         
-        print(f"Переведено {len(translated_texts)} строк. Результат сохранен в translated.txt")
+        print(f"Переведено {len(translated_texts)} строк. Результат сохранен в {output_file}")
     except requests.exceptions.HTTPError as e:
         print(f"Ошибка HTTP: {e}")
         print(f"Ответ сервера: {response.text}")
@@ -42,15 +41,15 @@ def create_translated_txt(response: requests.Response):
 
 
 
-def main():
+def translate_to_language(lang_code: str, lang_name: str):
     texts = read_texts(INPUT_FILE)
 
     if not texts:
-        print("Файл с текстом пустой или содержит только пустые строки.")
+        print(f"Файл с текстом пустой или содержит только пустые строки.")
         return
 
     body = {
-        "targetLanguageCode": target_language,
+        "targetLanguageCode": lang_code,
         "texts": texts,
         "folderId": FOLDER_ID,
     }
@@ -62,13 +61,25 @@ def main():
         "Authorization": f"Api-Key {API_KEY}",
     }
 
+    print(f"\nПеревод на {lang_name} ({lang_code})...")
     response = requests.post(
         "https://translate.api.cloud.yandex.net/translate/v2/translate",
         data=json_data,
         headers=headers,
     )
 
-    create_translated_txt(response)
+    output_file = f"translated_{lang_code}.txt"
+    create_translated_txt(response, output_file)
+
+def main():
+    languages = [
+        ("ru", "русский"),
+        ("de", "немецкий"),
+        ("fr", "французский"),
+    ]
+    
+    for lang_code, lang_name in languages:
+        translate_to_language(lang_code, lang_name)
 
 
 if __name__ == "__main__":
