@@ -1,10 +1,5 @@
 # Set Game Server (Python)
 
-
-## Требования
-- Python 3.11+
-- pip
-
 ## Установка и запуск
 ```bash
 pip install -r requirements.txt
